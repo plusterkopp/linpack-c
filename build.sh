@@ -15,26 +15,38 @@ Name=linpack
 GCCFLAGS="-O3 -fexpensive-optimizations"
 CLANGFLAGS="-Ofast"
 
-GCC=/usr/local/bin/gcc
-CLANG=/usr/bin/clang
+GCC=gcc	# /usr/local/bin/gcc
+CLANG=clang-8	# /usr/bin/clang
 
 if [ "$1" == "-b" ]; then
 	for arch in $GCCArchitectures
 	do
-	#	echo building $arch
-		if [ $arch != generic ]; then
-			$GCC $GCCFLAGS -mtune=$arch -march=$arch -o ${Name}-$arch ${Name}.c &
-		else
-			$GCC $GCCFLAGS  -o ${Name}-$arch ${Name}.c &
+		ARCHNAME=${Name}-$arch
+		if [ ! -r ${ARCHNAME}.s ] || [ ${ARCHNAME}.s -ot ${Name}.c ]; then
+			$GCC $GCCFLAGS -mtune=$arch -march=$arch -fverbose-asm -S -o ${ARCHNAME}.s ${Name}.c &
+		fi
+		if [ ! -x ${ARCHNAME} ] || [ ${ARCHNAME} -ot ${Name}.c ]; then
+			#	echo building $arch
+			if [ $arch != generic ]; then
+				$GCC $GCCFLAGS -mtune=$arch -march=$arch -o ${ARCHNAME} ${Name}.c &
+			else
+				$GCC $GCCFLAGS  -o ${ARCHNAME} ${Name}.c &
+			fi
 		fi
 	done
 	for arch in $ClangArchitectures
 	do
-	#	echo building $arch
-		if [ $arch != generic ]; then
-			$CLANG $CLANGFLAGS -mtune=$arch -march=$arch -o ${Name}C-$arch ${Name}.c &
-		else
-			$CLANG $CLANGFLAGS  -o ${Name}C-$arch ${Name}.c &
+		ARCHNAME=${Name}C-$arch
+		if [ ! -r ${ARCHNAME}.s ] || [ ${ARCHNAME}.s -ot ${Name}.c ]; then
+			$CLANG $CLANGFLAGS -mtune=$arch -march=$arch -S -o ${ARCHNAME}.s ${Name}.c &
+		fi
+		if [ ! -x ${ARCHNAME} ] || [ ${ARCHNAME} -ot ${Name}.c ]; then
+			#	echo building $arch
+			if [ $arch != generic ]; then
+				$CLANG $CLANGFLAGS -mtune=$arch -march=$arch -o ${ARCHNAME} ${Name}.c &
+			else
+				$CLANG $CLANGFLAGS  -o ${ARCHNAME} ${Name}.c &
+			fi
 		fi
 	done
 	wait	# Compile-Jobs abwarten

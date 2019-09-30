@@ -824,9 +824,10 @@ static int idamax(int n,REAL *dx,int incx)
 		dmax = fabs((double)dx[0]);
 		ix = ix + incx;
 		for (i = 1; i < n; i++) {
-			if(fabs((double)dx[ix]) > dmax) {
+			double fabsdxi = fabs((double)dx[ix]);
+			if(fabsdxi > dmax) {
 				itemp = i;
-				dmax = fabs((double)dx[ix]);
+				dmax = fabsdxi;
 			}
 			ix = ix + incx;
 		}
@@ -836,18 +837,21 @@ static int idamax(int n,REAL *dx,int incx)
 
 		itemp = 0;
 		dmax = fabs((double)dx[0]);
-		for (i = 1; i < n; i++)
-			if(fabs((double)dx[i]) > dmax) {
+		for (i = 1; i < n; i++) {
+			double fabsdxi = fabs((double)dx[i]);
+			if( fabsdxi > dmax) {
 				itemp = i;
-				dmax = fabs((double)dx[i]);
+				dmax = fabsdxi;
 			}
+		}
 	}
 	return (itemp);
 }
 
+static double secPerClock = 1.0 / CLOCKS_PER_SEC;
 
 static REAL second(void) {
-	return 1.0 * clock() / CLOCKS_PER_SEC;
+	return secPerClock * clock();
 }
 
 
